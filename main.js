@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '3.2.10', PANEL_ID = 'cd-exporter-v3';
+  const VERSION = '3.2.11', PANEL_ID = 'cd-exporter-v3';
   if (document.getElementById(PANEL_ID)) return;
 
   const $ = (selector, root = document) => root.querySelector(selector);
@@ -52,7 +52,7 @@
   document.body.append(panel);
 
   const panelStyle = document.createElement('style');
-  panelStyle.textContent = `#${PANEL_ID}{position:fixed;right:16px;bottom:16px;z-index:2147483647;width:min(360px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;border:1px solid #374355;border-radius:15px;background:#151922f5;color:#e9edf4;box-shadow:0 18px 55px #000a;font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}#${PANEL_ID} header{position:sticky;top:0;z-index:1;display:flex;justify-content:space-between;align-items:center;padding:13px 15px;border-bottom:1px solid #303946;background:#151922f5;font-size:15px}#${PANEL_ID} header span{display:flex;align-items:center;gap:7px}#${PANEL_ID} header button{min-width:36px;min-height:32px;border:1px solid #425066;border-radius:7px;background:#202936;color:#e9edf4;cursor:pointer}#${PANEL_ID} #cd-close{border:0;background:none;color:#b8c4d3;font-size:24px}#${PANEL_ID} main{padding:13px 15px}.progress>div{display:flex;justify-content:space-between;margin-bottom:7px;color:#c7d0dc}.progress>i{display:block;height:4px;border-radius:5px;background:#2b3440;overflow:hidden}.progress>i>i{display:block;width:0;height:100%;background:#62d3a4;transition:.2s}#${PANEL_ID} details{margin:13px 0;border:1px solid #34404e;border-radius:10px;padding:9px 11px;background:#11172280}#${PANEL_ID} summary{cursor:pointer;font-weight:700}#${PANEL_ID} label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;color:#cdd5df}#${PANEL_ID} label:has(input){justify-content:flex-start;padding:7px 8px;margin-top:6px;border-radius:7px;background:#20293670}#${PANEL_ID} input{accent-color:#55c99a}#${PANEL_ID} select{max-width:190px;border:1px solid #3b4655;border-radius:6px;background:#212936;color:#e9edf4;padding:5px}.range{margin-top:13px;padding:10px;border:1px solid #34404e;border-radius:9px;background:#151e2a}.range b{display:block;font-size:12px}.range button{width:100%;margin-top:9px;border:1px solid #4c6076;border-radius:7px;background:#202c3c;color:#d9e7f5;padding:8px;cursor:pointer}.range button:disabled{opacity:.4}.range small{display:block;margin-top:7px;color:#8fa0b4;font-size:11px}#${PANEL_ID} p{color:#95a2b4;font-size:11px;line-height:1.45}.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.actions button{border:0;border-radius:8px;background:#2a3340;color:#fff;padding:10px;font-weight:700;cursor:pointer}.actions button:disabled{opacity:.4}.actions .primary{background:#259b70}@media(max-width:430px){#${PANEL_ID}{right:10px;bottom:10px;width:calc(100vw - 20px);max-height:calc(100vh - 20px)}}`;
+  panelStyle.textContent = `#${PANEL_ID}{position:fixed;right:16px;bottom:16px;z-index:2147483647;width:min(360px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;border:1px solid #374355;border-radius:15px;background:#151922f5;color:#e9edf4;box-shadow:0 18px 55px #000a;font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}#${PANEL_ID} header{position:sticky;top:0;z-index:1;display:flex;justify-content:space-between;align-items:center;padding:13px 15px;border-bottom:1px solid #303946;background:#151922f5;font-size:15px}#${PANEL_ID} header span{display:flex;align-items:center;gap:7px}#${PANEL_ID} header button{min-width:36px;min-height:32px;border:1px solid #425066;border-radius:7px;background:#202936;color:#e9edf4;cursor:pointer}#${PANEL_ID} #cd-close{border:0;background:none;color:#b8c4d3;font-size:24px}#${PANEL_ID} main{padding:13px 15px}.progress>div{display:flex;justify-content:space-between;margin-bottom:7px;color:#c7d0dc}.progress>i{display:block;height:4px;border-radius:5px;background:#2b3440;overflow:hidden}.progress>i>i{display:block;width:0;height:100%;background:#62d3a4;transition:.2s}#${PANEL_ID} details{margin:13px 0;border:1px solid #34404e;border-radius:10px;padding:9px 11px;background:#11172280}#${PANEL_ID} summary{cursor:pointer;font-weight:700}#${PANEL_ID} label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;color:#cdd5df}#${PANEL_ID} label:has(input){justify-content:flex-start;padding:7px 8px;margin-top:6px;border-radius:7px;background:#20293670}#${PANEL_ID} input{accent-color:#55c99a}#${PANEL_ID} select{max-width:190px;border:1px solid #3b4655;border-radius:6px;background:#212936;color:#e9edf4;padding:5px}.range{margin-top:13px;padding:10px;border:1px solid #34404e;border-radius:9px;background:#151e2a}.range b{display:block;font-size:12px}.range button{width:100%;margin-top:9px;border:1px solid #4c6076;border-radius:7px;background:#202c3c;color:#d9e7f5;padding:8px;cursor:pointer}.range button:disabled{opacity:.4}.range small{display:block;margin-top:7px;color:#8fa0b4;font-size:11px}#${PANEL_ID} p{color:#95a2b4;font-size:11px;line-height:1.45}.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.actions button{border:0;border-radius:8px;background:#2a3340;color:#fff;padding:10px;font-weight:700;cursor:pointer}.actions button:disabled{opacity:.4}.actions .primary{background:#259b70}#${PANEL_ID}.cd-range-selecting{opacity:0;pointer-events:none}#cd-native-range-toolbar{position:fixed;z-index:2147483647;top:max(12px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;width:min(560px,calc(100vw - 24px));padding:9px 10px;border:1px solid #3b4d63;border-radius:12px;background:#121a25f5;color:#eef5fb;box-shadow:0 10px 32px #0008;font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}#cd-native-range-toolbar b{flex:1;line-height:1.35}#cd-native-range-toolbar span{display:flex;gap:6px}#cd-native-range-toolbar button{border:1px solid #465970;border-radius:7px;background:#243144;color:#ecf5ff;padding:7px 9px;font-weight:600;cursor:pointer}#cd-native-range-toolbar button[data-action="apply"]{border-color:#2aa97b;background:#24966e}#cd-native-range-toolbar button:disabled{opacity:.45;cursor:not-allowed}#chat-content-panel [data-cd-range-state="start"],#chat-content-panel [data-cd-range-state="end"]{outline:2px solid #55d8a3;outline-offset:3px;border-radius:10px;background:color-mix(in srgb,#3ccf97 16%,transparent)}#chat-content-panel [data-cd-range-state="inside"],#chat-content-panel [data-cd-range-preview="inside"]{box-shadow:inset 3px 0 #3dc694;background:color-mix(in srgb,#3ccf97 9%,transparent)}@media(max-width:430px){#${PANEL_ID}{right:10px;bottom:10px;width:calc(100vw - 20px);max-height:calc(100vh - 20px)}#cd-native-range-toolbar{top:max(8px,env(safe-area-inset-top));align-items:flex-start;flex-direction:column;gap:7px}#cd-native-range-toolbar span{width:100%}#cd-native-range-toolbar button{flex:1;padding:8px 6px;font-size:12px}}`;
   document.head.append(panelStyle);
 
   const copy = {
@@ -60,7 +60,7 @@
     en: { title: '✦ Caveduck Exporter', settings: 'Export settings', user: 'Include player messages', env: 'Scene separators and status', images: 'Use scene images as backgrounds', range: 'Export range', from: 'From', to: 'To', pick: 'Pick start and end turns', note: 'HTML includes search, reading layouts, and translation.', layout: 'Default reading layout', novel: 'Novel', chat: 'Chat', preparing: 'Preparing…', loading: 'Loading full history…', ready: 'Ready', empty: 'No recognizable messages', turns: 'turns', messages: 'messages' }
   };
   let uiLanguage = safeGet('cd-exporter-ui-language', 'zh-Hant');
-  let chats = [], currentStatus = 'preparing', currentCount = 0;
+  let chats = [], currentStatus = 'preparing', currentCount = 0, rangeSelection = null;
   const words = () => copy[uiLanguage] || copy['zh-Hant'];
   const settings = () => ({ includeUser: $('#cd-user').checked, environment: $('#cd-env').checked, images: $('#cd-images').checked, layout: $('#cd-layout').value, start: Number($('#cd-start').value || 0), end: Number($('#cd-end').value || 0) });
 
@@ -145,7 +145,7 @@
     return `${character}_export_${dates[0] || fallback}-${dates.at(-1) || fallback}_${exportStamp()}.${extension}`;
   };
 
-  $('#cd-close').onclick = () => { panel.remove(); panelStyle.remove(); };
+  $('#cd-close').onclick = () => { closeRangeSelection(); panel.remove(); panelStyle.remove(); };
   $('#cd-ui-lang').onclick = () => { uiLanguage = uiLanguage === 'en' ? 'zh-Hant' : 'en'; safeSet('cd-exporter-ui-language', uiLanguage); applyPanelLanguage(); };
   $('#cd-start').onchange = updateRangeNote; $('#cd-end').onchange = updateRangeNote;
   $('#cd-pick').onclick = () => openRangePicker();
@@ -153,20 +153,93 @@
   $('#cd-md').onclick = () => exportText('md');
   $('#cd-html').onclick = () => exportHtml(selectedMessages(), settings());
 
+  // Only Caveduck's `chat-message-{chat.id}` wrapper is accepted. If a page
+  // element cannot be matched to a fetched API turn, it is deliberately ignored.
+  function getNativeTurn(target) {
+    if (!(target instanceof Element)) return null;
+    const card = target.closest('#chat-content-panel [id^="chat-message-"]');
+    const id = Number(card?.id.replace(/^chat-message-/, ''));
+    return card && Number.isFinite(id) && turns().some(turn => turn.turnId === id) ? { card, id } : null;
+  }
+  function clearNativeRangeMarks() {
+    document.querySelectorAll('[data-cd-range-state],[data-cd-range-preview]').forEach(element => {
+      delete element.dataset.cdRangeState;
+      delete element.dataset.cdRangePreview;
+    });
+  }
+  function paintNativeRange(previewId = null) {
+    clearNativeRangeMarks();
+    if (!rangeSelection?.first) return;
+    const end = rangeSelection.last || previewId;
+    const low = Math.min(rangeSelection.first, end || rangeSelection.first), high = Math.max(rangeSelection.first, end || rangeSelection.first);
+    document.querySelectorAll('#chat-content-panel [id^="chat-message-"]').forEach(card => {
+      const id = Number(card.id.replace(/^chat-message-/, ''));
+      if (!Number.isFinite(id) || id < low || id > high) return;
+      if (id === rangeSelection.first) card.dataset.cdRangeState = 'start';
+      else if (rangeSelection.last && id === rangeSelection.last) card.dataset.cdRangeState = 'end';
+      else if (rangeSelection.last) card.dataset.cdRangeState = 'inside';
+      else if (previewId != null) card.dataset.cdRangePreview = 'inside';
+    });
+  }
+  function closeRangeSelection() {
+    if (!rangeSelection) return;
+    document.removeEventListener('click', rangeSelection.onClick, true);
+    document.removeEventListener('pointerover', rangeSelection.onHover, true);
+    rangeSelection.toolbar?.remove();
+    panel.classList.remove('cd-range-selecting');
+    clearNativeRangeMarks();
+    rangeSelection = null;
+  }
   function openRangePicker() {
-    const list = turns(), overlay = document.createElement('div'), dialog = document.createElement('section'); let first = null, last = null;
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483648;background:#000a;display:grid;place-items:center;padding:16px;font:13px -apple-system,sans-serif';
-    dialog.style.cssText = 'width:min(620px,100%);max-height:80vh;display:flex;flex-direction:column;background:#151b25;color:#eef4fb;border:1px solid #43526a;border-radius:14px;overflow:hidden';
-    dialog.innerHTML = `<header style="padding:14px 16px;border-bottom:1px solid #344155"><b>${uiLanguage === 'en' ? 'Select export range' : '選擇匯出範圍'}</b><p style="margin:4px 0 0;color:#9cabbc">${uiLanguage === 'en' ? 'Choose a start and an end turn.' : '依序選擇起點與終點。'}</p></header>`;
-    const body = document.createElement('div'); body.style.cssText = 'overflow:auto;padding:8px';
-    const footer = document.createElement('footer'); footer.style.cssText = 'display:flex;justify-content:flex-end;gap:8px;padding:12px;border-top:1px solid #344155';
-    const cancel = document.createElement('button'), apply = document.createElement('button');
-    cancel.textContent = uiLanguage === 'en' ? 'Cancel' : '取消'; apply.textContent = uiLanguage === 'en' ? 'Apply' : '套用'; apply.disabled = true;
-    [cancel, apply].forEach(button => button.style.cssText = 'border:0;border-radius:8px;padding:9px 13px;background:#2b3749;color:white;cursor:pointer'); apply.style.background = '#259b70';
-    const paint = () => { const low = Math.min(first ?? Infinity, last ?? Infinity), high = Math.max(first ?? -Infinity, last ?? -Infinity); body.querySelectorAll('button').forEach(button => { const id = Number(button.dataset.id), selected = id === first || id === last, middle = first != null && last != null && id >= low && id <= high; button.style.background = selected ? '#267d61' : middle ? '#254639' : '#1c2532'; }); apply.disabled = first == null || last == null; };
-    list.forEach((message, index) => { const button = document.createElement('button'); button.dataset.id = message.turnId; button.style.cssText = 'display:grid;grid-template-columns:58px 1fr;gap:10px;width:100%;margin:3px 0;padding:10px;border:1px solid #334155;border-radius:9px;background:#1c2532;color:#edf3fa;text-align:left;cursor:pointer'; button.innerHTML = `<b style="font-size:11px;color:#79dfb2">${uiLanguage === 'en' ? `Turn ${index + 1}` : `第 ${index + 1} 回`}</b><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(`${message.time}　${message.text.replace(/\s+/g, ' ').slice(0, 74)}`)}</span>`; button.onclick = () => { if (first == null || last != null) { first = message.turnId; last = null; } else if (message.turnId !== first) last = message.turnId; paint(); }; body.append(button); });
-    cancel.onclick = () => overlay.remove(); apply.onclick = () => { $('#cd-start').value = Math.min(first, last); $('#cd-end').value = Math.max(first, last); updateRangeNote(); overlay.remove(); };
-    footer.append(cancel, apply); dialog.append(body, footer); overlay.append(dialog); document.body.append(overlay);
+    closeRangeSelection();
+    const toolbar = document.createElement('section');
+    toolbar.id = 'cd-native-range-toolbar';
+    toolbar.innerHTML = `<b id="cd-native-range-instruction"></b><span><button type="button" data-action="reset"></button><button type="button" data-action="apply" disabled></button><button type="button" data-action="cancel"></button></span>`;
+    const updateToolbar = () => {
+      const complete = rangeSelection?.first != null && rangeSelection?.last != null;
+      $('#cd-native-range-instruction', toolbar).textContent = complete
+        ? (uiLanguage === 'en' ? 'Range selected. Apply it when ready.' : '範圍已選好，可套用。')
+        : rangeSelection?.first != null
+          ? (uiLanguage === 'en' ? 'Now tap the last message.' : '現在點最後一則對話。')
+          : (uiLanguage === 'en' ? 'Tap the first message, then the last message.' : '點第一則對話，再點最後一則。');
+      const apply = $('[data-action="apply"]', toolbar), reset = $('[data-action="reset"]', toolbar), cancel = $('[data-action="cancel"]', toolbar);
+      apply.disabled = !complete;
+      apply.textContent = uiLanguage === 'en' ? 'Apply' : '套用範圍';
+      reset.textContent = uiLanguage === 'en' ? 'Choose again' : '重新選取';
+      cancel.textContent = uiLanguage === 'en' ? 'Cancel' : '取消';
+    };
+    const onClick = event => {
+      const match = getNativeTurn(event.target);
+      if (!match) return;
+      event.preventDefault(); event.stopPropagation();
+      if (rangeSelection.first == null || rangeSelection.last != null) {
+        rangeSelection.first = match.id; rangeSelection.last = null;
+      } else if (match.id !== rangeSelection.first) {
+        rangeSelection.last = match.id;
+      }
+      paintNativeRange(); updateToolbar();
+    };
+    const onHover = event => {
+      if (!rangeSelection?.first || rangeSelection.last != null) return;
+      const match = getNativeTurn(event.target);
+      if (match) paintNativeRange(match.id);
+    };
+    rangeSelection = { first: null, last: null, toolbar, onClick, onHover };
+    toolbar.addEventListener('click', event => {
+      const action = event.target.closest('button')?.dataset.action;
+      if (action === 'cancel') closeRangeSelection();
+      if (action === 'reset') { rangeSelection.first = null; rangeSelection.last = null; paintNativeRange(); updateToolbar(); }
+      if (action === 'apply' && rangeSelection.first != null && rangeSelection.last != null) {
+        $('#cd-start').value = String(Math.min(rangeSelection.first, rangeSelection.last));
+        $('#cd-end').value = String(Math.max(rangeSelection.first, rangeSelection.last));
+        updateRangeNote(); closeRangeSelection();
+      }
+    });
+    document.body.append(toolbar);
+    panel.classList.add('cd-range-selecting');
+    document.addEventListener('click', onClick, true);
+    document.addEventListener('pointerover', onHover, true);
+    updateToolbar();
   }
 
   function exportText(type) {
