@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '3.2.4', PANEL_ID = 'cd-exporter-v3';
+  const VERSION = '3.2.5', PANEL_ID = 'cd-exporter-v3';
   if (document.getElementById(PANEL_ID)) return;
 
   const $ = (selector, root = document) => root.querySelector(selector);
