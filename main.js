@@ -1,13 +1,16 @@
 (() => {
   'use strict';
 
-  const VERSION = '3.2.5', PANEL_ID = 'cd-exporter-v3';
+  const VERSION = '3.2.7', PANEL_ID = 'cd-exporter-v3';
   if (document.getElementById(PANEL_ID)) return;
 
   const $ = (selector, root = document) => root.querySelector(selector);
   const escapeHtml = (value = '') => String(value)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  const proseHtml = (value = '') => escapeHtml(value)
+    .replace(/(^|[^*])\*([^*]+?)\*(?!\*)/g, '$1<em class="action">$2</em>')
+    .replace(/\n/g, '<br>');
   const localText = value => {
     if (typeof value === 'string') return value.trim();
     if (!value || typeof value !== 'object') return '';
@@ -244,7 +247,7 @@
         scene = message.state.scene;
       }
       states[message.id] = { ...message.state, image: background };
-      content.push(`<article id="${message.id}" class="entry ${message.user ? 'player' : 'character'}" data-search="${escapeHtml(`${message.name} ${message.text} ${message.state.scene} ${message.state.emotion}`.toLowerCase())}"><header><b>${escapeHtml(message.name)}</b><time title="對話建立時間" data-created-at="${escapeHtml(message.createdAt)}">${escapeHtml(message.time)}</time></header><div class="prose">${escapeHtml(message.text).replace(/\n/g, '<br>')}</div><div class="original-copy" hidden></div></article>`);
+      content.push(`<article id="${message.id}" class="entry ${message.user ? 'player' : 'character'}" data-original="${escapeHtml(message.text)}" data-search="${escapeHtml(`${message.name} ${message.text} ${message.state.scene} ${message.state.emotion}`.toLowerCase())}"><header><b>${escapeHtml(message.name)}</b><time title="對話建立時間" data-created-at="${escapeHtml(message.createdAt)}">${escapeHtml(message.time)}</time></header><div class="prose">${proseHtml(message.text)}</div><div class="original-copy" hidden></div></article>`);
       if (!message.user) characterRecords.push({ ...message, effectiveImage: background });
     }
     const firstImage = Object.values(states).find(value => value.image)?.image || '';
@@ -414,7 +417,7 @@
   }
 
   function outputSearchCss() {
-    return `.search-panel{position:sticky;z-index:4;top:-18px;margin:0 0 10px;padding:18px 0 6px;background:linear-gradient(#121721 82%,transparent)}.search-tools{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:34px;padding:4px 1px 0}.search-tools[hidden]{display:none}#search-meta{min-width:0;margin:0;color:#9cabbc;font:12px -apple-system,sans-serif}.search-actions{display:flex;flex:0 0 auto;gap:5px}.search-actions button{display:grid;place-items:center;width:30px;height:30px;padding:0;border:1px solid #40506a;border-radius:7px;background:#1a2636;color:#dce8f4;font-size:15px;cursor:pointer}.search-actions button:hover,.search-actions button:focus-visible{border-color:var(--accent);color:var(--accent)}.search-actions button:disabled{opacity:.35;cursor:default}.entry.search-current{outline:2px solid #62d3a488;outline-offset:10px;border-radius:8px;background:#62d3a40c}::highlight(cd-search){background:#e8c45a;color:#111}@media(max-width:700px){.search-panel{top:-15px;padding-top:15px}.search-actions button{width:44px;height:44px}}`;
+    return `.prose .action{font-style:normal;color:#aebbc9}.player .prose .action{color:#c8d8f1}.search-panel{position:sticky;z-index:4;top:-18px;margin:0 0 10px;padding:18px 0 6px;background:linear-gradient(#121721 82%,transparent)}.search-tools{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:34px;padding:4px 1px 0}.search-tools[hidden]{display:none}#search-meta{min-width:0;margin:0;color:#9cabbc;font:12px -apple-system,sans-serif}.search-actions{display:flex;flex:0 0 auto;gap:5px}.search-actions button{display:grid;place-items:center;width:30px;height:30px;padding:0;border:1px solid #40506a;border-radius:7px;background:#1a2636;color:#dce8f4;font-size:15px;cursor:pointer}.search-actions button:hover,.search-actions button:focus-visible{border-color:var(--accent);color:var(--accent)}.search-actions button:disabled{opacity:.35;cursor:default}.entry.search-current{outline:2px solid #62d3a488;outline-offset:10px;border-radius:8px;background:#62d3a40c}::highlight(cd-search){background:#e8c45a;color:#111}@media(max-width:700px){.search-panel{top:-15px;padding-top:15px}.search-actions button{width:44px;height:44px}}`;
   }
 
   function outputChapterCss() {
@@ -455,6 +458,7 @@
     });
     chapters.hidden = scenes.length === 0;
     const escape = value => String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    const renderProse = (box, value) => { box.innerHTML = escape(value).replace(/(^|[^*])\*([^*]+?)\*(?!\*)/g, '$1<em class="action">$2</em>').replace(/\n/g, '<br>'); };
     const rows = relation => Object.entries(relation || {}).filter(([, value]) => value !== null && value !== '' && typeof value !== 'object').map(([key, value]) => `<div><dt>${escape(key)}</dt><dd>${escape(value)}</dd></div>`).join('');
     const activate = entry => { const value = states[entry.id]; if (!value) return; const t = words(); stateBox.innerHTML = `<div class="card"><div><dt>${t.time}</dt><dd>${escape(value.gameTime || '—')}</dd></div><div><dt>${t.place}</dt><dd>${escape(value.place || '—')}</dd></div><div><dt>${t.weather}</dt><dd>${escape(value.weather || '—')}</dd></div><div><dt>${t.character}</dt><dd>${escape(value.name || '—')}</dd></div><div><dt>${t.emotion}</dt><dd>${escape(value.emotion || '—')}</dd></div>${rows(value.relation)}</div>`; if (value.image) backdrop.style.backgroundImage = `linear-gradient(#0d1117eb,#0d1117f5),url("${String(value.image).replace(/"/g, '')}")`; };
     const markChapterForEntry = entry => {
@@ -529,7 +533,7 @@
       auditSections.forEach(section => { const items = [...section.querySelectorAll('.audit-searchable')], visible = items.some(node => !node.hidden); section.hidden = !visible; if (visible) section.open = true; });
       auditSearchMeta.textContent = words().dash.found(matches);
     };
-    const setTranslationView = show => { translationsVisible = show; let available = false; for (const entry of entries) { const prose = entry.querySelector('.prose'), originalBox = entry.querySelector('.original-copy'), original = entry.dataset.original, translated = entry.dataset.translated; if (!original || !translated) continue; available = true; prose.textContent = show ? translated : original; originalBox.textContent = original; originalBox.hidden = !(show && showOriginalCopy.checked); } viewButton.hidden = !available; viewButton.textContent = show ? words().original : words().translated; if (search.value.trim()) updateSearch(); };
+    const setTranslationView = show => { translationsVisible = show; let available = false; for (const entry of entries) { const prose = entry.querySelector('.prose'), originalBox = entry.querySelector('.original-copy'), original = entry.dataset.original, translated = entry.dataset.translated; if (!original || !translated) continue; available = true; renderProse(prose, show ? translated : original); originalBox.textContent = original; originalBox.hidden = !(show && showOriginalCopy.checked); } viewButton.hidden = !available; viewButton.textContent = show ? words().original : words().translated; if (search.value.trim()) updateSearch(); };
     const applyLanguage = () => {
       const t = words();
       document.documentElement.lang = uiLanguage;
@@ -559,7 +563,7 @@
     const googleChunk = async (value, language) => { let lastError; for (let attempt = 0; attempt < 3; attempt++) { const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 25000); try { const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${encodeURIComponent(language)}&dt=t&q=${encodeURIComponent(value)}`; const response = await fetch(url, { signal: controller.signal, credentials: 'omit', cache: 'no-store', referrerPolicy: 'no-referrer' }); if (!response.ok) throw new Error(`Google HTTP ${response.status}`); const data = await response.json(), result = Array.isArray(data?.[0]) ? data[0].map(item => item?.[0]).filter(Boolean).join('') : ''; if (!result) throw new Error('Google returned no translation'); return result; } catch (error) { lastError = error; if (attempt < 2) await wait(700 * (attempt + 1)); } finally { clearTimeout(timer); } } throw lastError; };
     const translateGoogle = async source => { const output = []; for (const part of splitText(source)) { output.push(await googleChunk(part, target.value)); if (cancelled) break; await wait(150); } return output.join(''); };
     const translateNatural = async source => { const apiUrl = get('api-url').value.trim(), apiKey = get('api-key').value.trim(), model = get('api-model').value.trim(); const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` }, body: JSON.stringify({ model, messages: [{ role: 'system', content: 'Translate faithfully and naturally. Return only the translation.' }, { role: 'user', content: `Target language: ${target.value}\n\n${source}` }] }) }); if (!response.ok) throw new Error(`API HTTP ${response.status}`); const data = await response.json(), result = data?.choices?.[0]?.message?.content; if (!result) throw new Error('API returned no translation'); return result; };
-    const translateEntry = async entry => { const prose = entry.querySelector('.prose'), originalBox = entry.querySelector('.original-copy'), source = entry.dataset.original || prose.innerText; entry.dataset.original = source; const useApi = get('api-url').value.trim() && get('api-key').value.trim(); const result = useApi ? await translateNatural(source) : await translateGoogle(source); if (!result) throw new Error('Empty translation'); entry.dataset.translated = result; entry.dataset.translationTarget = target.value; prose.textContent = result; originalBox.textContent = source; originalBox.hidden = !showOriginalCopy.checked; };
+    const translateEntry = async entry => { const prose = entry.querySelector('.prose'), originalBox = entry.querySelector('.original-copy'), source = entry.dataset.original || prose.innerText; entry.dataset.original = source; const useApi = get('api-url').value.trim() && get('api-key').value.trim(); const result = useApi ? await translateNatural(source) : await translateGoogle(source); if (!result) throw new Error('Empty translation'); entry.dataset.translated = result; entry.dataset.translationTarget = target.value; renderProse(prose, result); originalBox.textContent = source; originalBox.hidden = !showOriginalCopy.checked; };
 
     search.oninput = updateSearch;
     search.onkeydown = event => {
