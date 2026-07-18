@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '3.2.7', PANEL_ID = 'cd-exporter-v3';
+  const VERSION = '3.2.10', PANEL_ID = 'cd-exporter-v3';
   if (document.getElementById(PANEL_ID)) return;
 
   const $ = (selector, root = document) => root.querySelector(selector);
@@ -584,7 +584,9 @@
     viewButton.onclick = () => setTranslationView(!translationsVisible);
     target.onchange = () => { if (entries.some(entry => entry.dataset.translated)) { setTranslationView(false); for (const entry of entries) delete entry.dataset.translated; viewButton.hidden = true; note.dataset.result = ''; note.textContent = words().changed; } };
     cancelButton.onclick = () => { cancelled = true; };
-    translateButton.onclick = async () => { const visible = entries.filter(entry => !entry.hidden), originalLabel = translateButton.textContent; cancelled = false; translateButton.disabled = true; cancelButton.hidden = false; let ok = 0, failed = 0; try { for (let index = 0; index < visible.length && !cancelled; index++) { const progress = words().progress(index + 1, visible.length); translateButton.textContent = progress; try { await translateEntry(visible[index]); ok++; } catch (error) { failed++; const box = visible[index].querySelector('.original-copy'); box.textContent = `${uiLanguage === 'en' ? 'Translation failed' : '翻譯失敗'}：${error.message}`; box.hidden = false; } } translationsVisible = true; setTranslationView(true); note.dataset.result = '1'; note.textContent = words().done(ok, failed); } finally { translateButton.disabled = false; translateButton.textContent = originalLabel; cancelButton.hidden = true; } };
+    const translationQueue = (list = entries) => list.map((entry, index) => { const rect = entry.getBoundingClientRect(), inView = !entry.hidden && rect.bottom >= 0 && rect.top <= innerHeight; const distance = Math.abs((rect.top + rect.bottom) / 2 - innerHeight / 2); return { entry, index, inView, hidden: entry.hidden, distance }; }).sort((a, b) => Number(a.hidden) - Number(b.hidden) || Number(b.inView) - Number(a.inView) || a.distance - b.distance || a.index - b.index).map(item => item.entry);
+    const showTranslationFailure = (entry, error) => { const box = entry.querySelector('.original-copy'); box.textContent = `${uiLanguage === 'en' ? 'Translation failed' : '翻譯失敗'}：${error.message}`; box.hidden = false; };
+    translateButton.onclick = async () => { const pending = [...entries], originalLabel = translateButton.textContent, retry = []; cancelled = false; translateButton.disabled = true; cancelButton.hidden = false; let ok = 0, failed = 0, processed = 0; try { while (pending.length && !cancelled) { const entry = translationQueue(pending)[0]; pending.splice(pending.indexOf(entry), 1); processed++; translateButton.textContent = words().progress(processed, entries.length); try { await translateEntry(entry); ok++; } catch (error) { retry.push(entry); showTranslationFailure(entry, error); } } const retryTotal = retry.length; while (retry.length && !cancelled) { const entry = translationQueue(retry)[0]; retry.splice(retry.indexOf(entry), 1); processed++; translateButton.textContent = words().progress(processed, entries.length + retryTotal); try { await translateEntry(entry); ok++; } catch (error) { failed++; showTranslationFailure(entry, error); } } translationsVisible = true; setTranslationView(true); note.dataset.result = '1'; note.textContent = words().done(ok, failed); } finally { translateButton.disabled = false; translateButton.textContent = originalLabel; cancelButton.hidden = true; } };
     const showView = name => {
       const showAudit = name === 'audit'; reader.hidden = showAudit; audit.hidden = !showAudit;
       document.querySelectorAll('.views button').forEach(item => item.classList.toggle('active', item.dataset.view === name));
