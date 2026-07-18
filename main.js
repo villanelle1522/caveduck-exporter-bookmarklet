@@ -172,6 +172,27 @@
       list.forEach(message => { output += `[${message.time}] ${message.name}\n${message.text}\n\n`; });
       download(output, exportName(list, 'txt'), 'text/plain;charset=utf-8'); return;
     }
+    if (type === 'md') {
+      // Preserve role-play emphasis such as *actions*, while keeping generated
+      // headings predictable in every Markdown viewer.
+      const heading = value => String(value || '').replace(/[\r\n`#]+/g, ' ').replace(/\s+/g, ' ').trim();
+      const character = heading(list.find(message => !message.user)?.name || 'Caveduck');
+      const playerCount = list.filter(message => message.user).length, characterCount = list.length - playerCount;
+      let scene = '', output = `\ufeff# ${character} 對話紀錄\n\n> 匯出時間：${formatDate()}\n> 共 ${list.length} 則｜角色 ${characterCount} 則｜玩家 ${playerCount} 則\n`;
+      for (const message of list) {
+        const state = message.state || {}, sceneLabel = [state.gameTime, state.place, state.weather].filter(Boolean).join(' · ');
+        if (option.environment && sceneLabel && sceneLabel !== scene) {
+          scene = sceneLabel;
+          output += `\n---\n\n## ${heading(sceneLabel)}\n\n`;
+        }
+        const name = heading(message.name || (message.user ? '玩家' : '角色'));
+        const timestamp = heading(message.time || message.createdAt || '');
+        const text = String(message.text || '').trim();
+        if (text) output += `### ${name}${timestamp ? ` \`${timestamp}\`` : ''}\n\n${text}\n\n`;
+      }
+      if (!list.length) output += '\n> 沒有可匯出的對話。\n';
+      download(output.trimEnd() + '\n', exportName(list, 'md'), 'text/markdown;charset=utf-8'); return;
+    }
     let scene = '', output = '\ufeff# Caveduck 對話紀錄\n\n';
     list.forEach(message => { if (option.environment && message.state.scene && message.state.scene !== scene) { scene = message.state.scene; output += `---\n\n## ${scene}\n\n`; } output += `### ${message.name}\n\n_${message.time}_\n\n${message.text}\n\n`; });
     if (!list.length) output += '> 此範圍沒有符合的對話。\n';
@@ -240,6 +261,7 @@
 <body>
   <div id="reading-progress"></div>
   <div class="backdrop"></div>
+  <noscript><div class="no-script-notice"><b>此預覽器未啟用互動功能。</b><br>請在 iPhone 的 Safari 開啟此 HTML，才能使用狀態欄、閱讀／資料頁切換、搜尋與翻譯。</div></noscript>
   <div class="shell">
     <main id="reader" class="reader">${content.join('')}</main>
     <section id="audit" class="audit" hidden>
@@ -412,6 +434,9 @@
 
   function outputRuntime(states, defaultLayout) {
     'use strict';
+    // iOS 檔案預覽與舊 WebView 偶爾缺少動畫／媒體查詢 API；這些降級不應讓整份檔案失去互動能力。
+    const requestFrame = globalThis.requestAnimationFrame || (callback => setTimeout(callback, 16));
+    const cancelFrame = globalThis.cancelAnimationFrame || clearTimeout;
     const get = id => document.getElementById(id), entries = [...document.querySelectorAll('.entry')], scenes = [...document.querySelectorAll('.scene[id]')];
     const reader = get('reader'), audit = get('audit'), right = get('right'), shell = document.querySelector('.shell'), stateBox = get('state'), backdrop = document.querySelector('.backdrop');
     const search = get('search'), searchTools = get('search-tools'), searchMeta = get('search-meta'), searchPrevious = get('search-prev'), searchNext = get('search-next'), chapters = get('chapters'), chapterList = get('chapter-list'), auditSearch = get('audit-search'), auditSearchMeta = get('audit-search-meta'), downloadAuditJson = get('download-audit-json'), rawAuditData = get('audit-raw-data'), mode = get('mode'), target = get('language'), uiLanguageToggle = get('ui-language'), showOriginalCopy = get('show-original-copy'), translateButton = get('translate-all'), viewButton = get('translation-view'), cancelButton = get('cancel-translation'), note = get('translation-note'), imageLightbox = get('image-lightbox'), imageLightboxImage = get('image-lightbox-image'), imageLightboxCaption = get('image-lightbox-caption'), imageLightboxClose = get('image-lightbox-close');
@@ -443,7 +468,7 @@
       chapterButtons.forEach(button => button.classList.toggle('active', button.dataset.target === active.id));
     };
     let frame = 0;
-    const sync = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(() => { let best, distance = Infinity; for (const entry of entries) { if (entry.hidden) continue; const rect = entry.getBoundingClientRect(), current = Math.abs((rect.top + rect.bottom) / 2 - innerHeight / 2); if (current < distance) { distance = current; best = entry; } } if (best) activate(best); syncChapter(); const max = Math.max(1, document.documentElement.scrollHeight - innerHeight); get('reading-progress').style.width = `${Math.max(0, Math.min(100, scrollY / max * 100))}%`; }); };
+    const sync = () => { cancelFrame(frame); frame = requestFrame(() => { let best, distance = Infinity; for (const entry of entries) { if (entry.hidden) continue; const rect = entry.getBoundingClientRect(), current = Math.abs((rect.top + rect.bottom) / 2 - innerHeight / 2); if (current < distance) { distance = current; best = entry; } } if (best) activate(best); syncChapter(); const max = Math.max(1, document.documentElement.scrollHeight - innerHeight); get('reading-progress').style.width = `${Math.max(0, Math.min(100, scrollY / max * 100))}%`; }); };
     let searchMatches = [], searchIndex = -1;
     const searchableText = entry => `${entry.dataset.search || ''} ${entry.querySelector('.prose')?.innerText || ''} ${entry.querySelector('.original-copy')?.innerText || ''}`.toLocaleLowerCase();
     const clearTextHighlights = () => { if (globalThis.CSS?.highlights) CSS.highlights.delete('cd-search'); };
@@ -476,7 +501,7 @@
       highlightSearchText(search.value.trim().toLocaleLowerCase(), entry);
       renderSearchStatus(); activate(entry); markChapterForEntry(entry);
       if (isMobile()) closeDrawer();
-      requestAnimationFrame(() => entry.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+      requestFrame(() => entry.scrollIntoView({ behavior: 'smooth', block: 'center' }));
     };
     const updateSearch = () => {
       const query = search.value.trim().toLocaleLowerCase();
@@ -569,7 +594,7 @@
       const jump = event.target.closest('[data-jump]'); if (!jump) return;
       const entry = get(jump.dataset.jump); if (!entry) return;
       showView('reader'); activate(entry); markChapterForEntry(entry);
-      requestAnimationFrame(() => entry.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+      requestFrame(() => entry.scrollIntoView({ behavior: 'smooth', block: 'center' }));
     };
     imageLightboxClose.onclick = closeImageLightbox;
     imageLightbox.onclick = event => { if (event.target === imageLightbox) closeImageLightbox(); };
@@ -578,11 +603,11 @@
       const scene = get(button.dataset.target); if (!scene) return;
       chapterButtons.forEach(item => item.classList.toggle('active', item === button));
       showView('reader');
-      requestAnimationFrame(() => scene.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+      requestFrame(() => scene.scrollIntoView({ behavior: 'smooth', block: 'start' }));
     };
     const shade = get('mobile-shade'), drawerToggle = get('drawer-toggle'), drawerClose = get('drawer-close');
     let desktopCollapsed = false;
-    const isMobile = () => matchMedia('(max-width:700px)').matches;
+    const isMobile = () => typeof globalThis.matchMedia === 'function' ? globalThis.matchMedia('(max-width:700px)').matches : globalThis.innerWidth <= 700;
     function openDrawer() { right.classList.add('open'); shade.hidden = false; document.body.style.overflow = 'hidden'; drawerToggle.style.display = 'none'; }
     function closeDrawer() { right.classList.remove('open'); shade.hidden = true; document.body.style.overflow = ''; if (!desktopCollapsed) drawerToggle.style.removeProperty('display'); }
     function collapseSidebar() {
